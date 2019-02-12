@@ -1,6 +1,6 @@
 module RedmineObjectStorage
   module AttachmentsControllerPatch
-    
+
     def self.included(base) # :nodoc:
       base.class_eval do
         unloadable
@@ -11,7 +11,7 @@ module RedmineObjectStorage
 
     def redirect_to_objectstorage
       skip_redirection = false
-      
+
       if @attachment.nil?
         # Since we uploads occur prior to an actual record being created,
         # the context needs to be parsed from the url.
@@ -27,7 +27,7 @@ module RedmineObjectStorage
         # For attachments in the "File" area, we want to identify
         # as a "Project" since there technically is no "File" container
         klass = "Project" if klass == "File"
-        
+
         # Try to match an id (regardless of whether it'll be valid)
         record  = ref[-1].to_i
         project = if record > 0
@@ -37,7 +37,7 @@ module RedmineObjectStorage
         end
 
         filename = request.env["QUERY_STRING"].scan(/filename=(.*)/).flatten.first
-        path = Attachment.objectstorage_absolute_path(filename, project)
+        path = Attachment.objectstorage_absolute_path(filename)
 
         Attachment.set_context :class => klass, :project => project
         skip_redirection = true
@@ -49,7 +49,7 @@ module RedmineObjectStorage
         end
       end
 
-      path ||= @attachment.objectstorage_path
+      path ||= @attachment.objectstorage_filename
 
       expire_str = Attachment.objectstorage_config["expire"]
       expire = expire_str ? Integer(expire_str) : 86400
